@@ -68,4 +68,3 @@ Click **"↓ Load sample JD"** and **"↓ Load 5 sample candidates"** to instant
 
 ---
 
-*Built for Nutrabey AI Automation Intern Assessment — Problem 1: AI Resume Screening System*
