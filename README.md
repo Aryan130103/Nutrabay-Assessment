@@ -64,7 +64,7 @@ ai-resume-screener/
 
 ## 💡 Sample Data
 
-Click **"↓ Load sample JD"** and **"↓ Load 5 sample candidates"** to instantly populate the tool with realistic demo data for the Nutrabey AI Intern role — no typing required.
+Click **"↓ Load sample JD"** and **"↓ Load 5 sample candidates"** to instantly populate the tool with realistic demo data for the Nutrabey AI Intern role - no typing required.
 
 ---
 
