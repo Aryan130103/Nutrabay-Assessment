@@ -1,4 +1,4 @@
-# AI Resume Screener — Nutrabay
+# AI Resume Screener - Nutrabay
 
 ## Quick Start
 
