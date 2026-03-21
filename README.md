@@ -4,7 +4,7 @@
 
 1. Download `ai-resume-screener.html`
 2. Open it in any browser (Chrome, Firefox, Edge)
-3. Done — no install, no server, no setup required
+3. Done - no install, no server, no setup required
 
 ---
 
@@ -35,6 +35,4 @@
 
 Vanilla HTML/CSS/JS · [Groq API](https://console.groq.com) (LLaMA 3.3 70B, free) · PDF.js
 
----
 
-*Nutrabay AI Automation Intern Assessment — Problem 1: AI Resume Screening System*
