@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Resume Screener — Nutrabay</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f12; --bg2: #13161b; --bg3: #1a1e26;
+      --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.13);
+      --accent: #00c98d; --accent2: #00a874; --accent-bg: rgba(0,201,141,0.08);
+      --text: #e8eaed; --muted: #7a8394; --muted2: #4a5162;
+      --amber: #f5a623; --amber-bg: rgba(245,166,35,0.1);
+      --red: #f05252; --red-bg: rgba(240,82,82,0.1);
+      --radius: 10px; --radius-lg: 16px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+    .shell { max-width: 820px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+
+    /* Navbar */
+    .navbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-name { font-size: 15px; font-weight: 600; }
+    .brand-tag  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    /* Stepper */
+    .stepper { display: flex; align-items: center; margin-bottom: 2rem; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.5rem; overflow-x: auto; }
+    .step-item { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .step-circle { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; transition: all 0.25s; flex-shrink: 0; }
+    .step-circle.done   { background: var(--accent); color: #0d0f12; }
+    .step-circle.active { background: var(--accent); color: #0d0f12; box-shadow: 0 0 0 4px rgba(0,201,141,0.2); }
+    .step-circle.idle   { background: var(--bg3); color: var(--muted); border: 1px solid var(--border2); }
+    .step-text { font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+    .step-text.active { color: var(--text); }
+    .step-line { flex: 1; height: 1px; background: var(--border2); margin: 0 10px; min-width: 16px; }
+
+    /* Card */
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 1rem; }
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .card-sub   { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+
+    /* Form */
+    label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"], textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: 'Sora', sans-serif; font-size: 14px; padding: 10px 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; resize: vertical; }
+    input[type="text"]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,201,141,0.12); }
+    textarea { min-height: 160px; line-height: 1.6; }
+    .char-count { font-size: 12px; color: var(--muted2); text-align: right; margin-top: 5px; }
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; border-radius: var(--radius); font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap; }
+    .btn-primary { background: var(--accent); color: #0d0f12; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent2); transform: translateY(-1px); }
+    .btn-primary:disabled { background: var(--bg3); color: var(--muted2); cursor: not-allowed; transform: none; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+    .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+    .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(240,82,82,0.2); font-size: 12px; padding: 6px 10px; }
+    .btn-danger:hover { background: rgba(240,82,82,0.18); }
+    .btn-sample { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(0,201,141,0.2); font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-family: 'Sora', sans-serif; font-weight: 600; }
+    .btn-sample:hover { background: rgba(0,201,141,0.15); }
+
+    .nav-row { display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; flex-wrap: wrap; gap: 10px; }
+
+    /* Candidate card */
+    .cand-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 0.75rem; }
+    .cand-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .cand-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--accent); background: var(--accent-bg); padding: 3px 10px; border-radius: 20px; }
+    .cand-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
+    @media (max-width: 560px) { .cand-grid { grid-template-columns: 1fr; } }
+    .add-cand-btn { width: 100%; padding: 12px; background: transparent; border: 1px dashed var(--border2); border-radius: var(--radius); color: var(--muted); font-family: 'Sora', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .add-cand-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+    /* Upload zone */
+    .upload-zone { border: 1px dashed var(--border2); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: all 0.15s; text-align: center; background: var(--bg); margin-bottom: 8px; }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-bg); }
+    .upload-zone.dragover { border-color: var(--accent); background: var(--accent-bg); }
+    .upload-zone.loaded { border-color: var(--accent); background: var(--accent-bg); }
+    .upload-label { font-size: 12px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 6px; pointer-events: none; }
+    .upload-label.success { color: var(--accent); font-weight: 600; }
+    .upload-or { font-size: 11px; color: var(--muted2); text-align: center; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .resume-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+
+    /* Progress */
+    .progress-wrap { display: flex; flex-direction: column; align-items: center; padding: 3rem 1rem; }
+    .progress-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .progress-sub   { font-size: 14px; color: var(--muted); margin-bottom: 2.5rem; text-align: center; }
+    .progress-list  { width: 100%; max-width: 420px; }
+    .p-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .p-item:last-child { border-bottom: none; }
+    .p-dot { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; transition: all 0.25s; }
+    .p-dot.pending { background: var(--bg3); border: 1.5px solid var(--border2); }
+    .p-dot.running { background: var(--accent-bg); border: 1.5px solid var(--accent); }
+    .p-dot.done    { background: var(--accent); color: #0d0f12; }
+    .p-dot.error   { background: var(--red-bg); border: 1.5px solid var(--red); color: var(--red); }
+    .p-name   { font-size: 14px; flex: 1; }
+    .p-status { font-size: 12px; color: var(--muted); }
+    .spinner { width: 11px; height: 11px; border: 2px solid rgba(0,201,141,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+
+    /* Results */
+    .results-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 1.5rem; }
+    .results-title { font-size: 22px; font-weight: 700; }
+    .results-meta  { font-size: 13px; color: var(--muted); margin-top: 3px; }
+    .results-btns  { display: flex; gap: 8px; flex-wrap: wrap; }
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.5rem; }
+    @media (max-width: 580px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+    .stat-box { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+    .stat-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px; }
+    .stat-val { font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .c-green { color: var(--accent); } .c-amber { color: var(--amber); } .c-red { color: var(--red); }
+
+    /* Table */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--border2); text-align: left; white-space: nowrap; }
+    td { padding: 13px 14px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+    tbody tr { cursor: pointer; transition: background 0.1s; }
+    tbody tr:hover td { background: var(--bg3); }
+    tbody tr:last-child td { border-bottom: none; }
+    .rank-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .r1 { background: rgba(245,166,35,0.15); color: var(--amber); border: 1px solid rgba(245,166,35,0.3); }
+    .r2 { background: rgba(180,178,169,0.15); color: #b4b2a9; border: 1px solid rgba(180,178,169,0.3); }
+    .r3 { background: rgba(211,131,84,0.15); color: #d38354; border: 1px solid rgba(211,131,84,0.3); }
+    .rn { background: var(--bg3); color: var(--muted); border: 1px solid var(--border2); }
+    .score-wrap { display: flex; align-items: center; gap: 8px; }
+    .score-bar  { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; min-width: 55px; }
+    .score-fill { height: 100%; border-radius: 3px; }
+    .score-num  { font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 34px; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
+    .badge-strong   { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(0,201,141,0.25); }
+    .badge-moderate { background: var(--amber-bg);  color: var(--amber);  border: 1px solid rgba(245,166,35,0.25); }
+    .badge-not      { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(240,82,82,0.25); }
+
+    /* Detail */
+    .detail-section { margin-top: 1.5rem; }
+    .detail-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 10px; }
+    .detail-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; overflow: hidden; }
+    .detail-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; transition: background 0.1s; }
+    .detail-head:hover { background: var(--bg3); }
+    .detail-head-left  { display: flex; align-items: center; gap: 10px; }
+    .detail-head-right { display: flex; align-items: center; gap: 12px; }
+    .cand-name-big { font-size: 15px; font-weight: 600; }
+    .chevron { font-size: 12px; color: var(--muted); }
+    .detail-body { display: none; padding: 0 18px 18px; }
+    .detail-body.open { display: block; }
+    .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 14px; }
+    @media (max-width: 520px) { .cols2 { grid-template-columns: 1fr; } }
+    .col-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .col-strengths .col-label { color: var(--accent); }
+    .col-gaps .col-label { color: var(--red); }
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 6px; font-size: 12px; margin: 3px 3px 3px 0; }
+    .tag-green { background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(0,201,141,0.2); }
+    .tag-red   { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(240,82,82,0.2); }
+    .summary-para { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+    /* Insights */
+    .insights-card { background: linear-gradient(135deg, rgba(0,201,141,0.06) 0%, rgba(0,168,116,0.03) 100%); border: 1px solid rgba(0,201,141,0.2); border-radius: var(--radius-lg); padding: 1.75rem; margin-top: 1.5rem; }
+    .insights-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px; }
+    .insights-title-row { display: flex; align-items: center; gap: 10px; }
+    .insights-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--accent); color: #0d0f12; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+    .insights-title { font-size: 15px; font-weight: 700; }
+    .insights-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .insights-loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; padding: 1rem 0; }
+    .insight-item { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid rgba(0,201,141,0.1); animation: fadeIn 0.3s ease; }
+    .insight-item:last-child { border-bottom: none; }
+    .insight-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); border: 1px solid rgba(0,201,141,0.3); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .insight-content { flex: 1; }
+    .insight-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 4px; }
+    .insight-text  { font-size: 14px; color: var(--text); line-height: 1.6; }
+
+    /* Error */
+    .error-box { background: var(--red-bg); border: 1px solid rgba(240,82,82,0.25); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--red); margin-bottom: 1rem; }
+
+    /* Footer */
+    .footer { margin-top: 4rem; text-align: center; font-size: 12px; color: var(--muted2); }
+    .footer span { color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="navbar">
+    <div class="brand">
+      <img src="data:image/webp;base64,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" style="width:32px;height:32px;border-radius:8px;" alt="Nutrabay" />
+      <div>
+        <div class="brand-name">Nutrabay</div>
+        <div class="brand-tag">AI Resume Screener</div>
+      </div>
+    </div>
+    <span style="font-size:12px;color:var(--muted);">Powered by Groq API</span>
+  </nav>
+
+  <div id="error-box" class="error-box" style="display:none;"></div>
+  <div class="stepper" id="stepper"></div>
+  <div id="main-content"></div>
+  <div class="footer">Built with <span>Groq API</span> · AI Resume Screener · Nutrabay Assessment</div>
+</div>
+
+<script>
+const GROQ_KEY = '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';
+
+const state = {
+  step: 1, jd: '',
+  candidates: [{ id: 1, name: '', resume: '' }],
+  nextId: 2, results: [], progress: [],
+  insights: null, insightsLoading: false
+};
+
+const SAMPLE_JD = `Role: AI Automation Intern
+Company: Nutrabay (Health and Nutrition Brand)
+
+Required Skills:
+- Proficiency in Python or JavaScript
+- Experience with LLMs/AI APIs (OpenAI, Claude, Gemini, etc.)
+- Familiarity with automation tools (Zapier, Make, n8n)
+- Ability to build basic UIs or dashboards
+- Strong problem-solving and communication skills
+
+Preferred:
+- Experience with no-code tools (Airtable, Notion, Webflow)
+- Prior internship or project in AI/automation
+- Knowledge of prompt engineering
+
+Responsibilities:
+- Build AI-powered tools for internal use
+- Automate repetitive HR and ops workflows
+- Integrate AI APIs into existing systems`;
+
+const SAMPLE_CANDIDATES = [
+  { name: "Arjun Sharma", resume: `Arjun Sharma | Mumbai
+B.Tech CS, IIT Bombay 2024 (GPA 8.4)
+AI/ML Intern at Flipkart: Built recommendation engine using LangChain + GPT-4, automated email pipeline, integrated Claude API.
+Freelance: Zapier + Airtable workflows, Python automation scripts.
+Projects: Resume Parser with Claude API, n8n HR onboarding workflow, Prompt Engineering Toolkit (120+ GitHub stars).
+Skills: Python, JavaScript, React, Claude API, OpenAI API, Zapier, Make, n8n, Airtable, Notion API, Prompt Engineering, LangChain, SQL` },
+  { name: "Priya Nair", resume: `Priya Nair | Bangalore
+BCA, Christ University 2023 (CGPA 7.9)
+Digital Marketing Intern at HealthKart: Managed Notion content calendar, used ChatGPT for copywriting, ran A/B tests.
+Projects: FAQ chatbot using Dialogflow, Canva + Zapier content automation.
+Skills: Canva, Notion, ChatGPT (basic), Zapier (beginner), Excel, Google Sheets, Social Media Management` },
+  { name: "Rahul Mehta", resume: `Rahul Mehta | Delhi
+B.Sc IT, Delhi University 2023 (65%)
+Software Developer Intern at Infosys BPM: REST APIs with Node.js, third-party API integrations, React + Chart.js dashboard.
+Projects: WhatsApp customer support bot (Twilio + Node.js), ETL pipeline (Python pandas), Notion API automation.
+Skills: Node.js, React, Python, REST APIs, SQL, MongoDB, Twilio API, Notion API.
+Note: New to LLMs, completed DeepLearning.AI prompt engineering course, experimenting with OpenAI API.` },
+  { name: "Sneha Kulkarni", resume: `Sneha Kulkarni | Pune
+MBA Operations, Symbiosis 2023
+HR Operations Executive at TCS (1 year): End-to-end recruitment, implemented Workday ATS (20% faster hiring), created SOPs.
+Operations Analyst at Wipro: Process mapping, Excel KPI dashboards.
+Skills: Excel, PowerPoint, Workday, Zoho Recruit, Google Workspace, Basic SQL, Process Documentation.
+Note: Familiar with Zapier basic automations. No coding background. Keen to learn AI tools.` },
+  { name: "Kabir Anand", resume: `Kabir Anand | Hyderabad
+B.Tech ECE, BITS Pilani 2024 (GPA 9.1)
+Research Intern at Microsoft Research India: Fine-tuned LLaMA 2, built RAG pipeline (LangChain + Pinecone + GPT-4), published paper.
+Freelance AI Developer (1 year): 5+ production AI tools, Make.com + OpenAI workflows, React AI dashboards.
+Projects: SOP Analyzer (Claude), HR Resume Screener (LLMs), Voice Bot (Twilio + Whisper + GPT-4).
+Skills: Python, JavaScript, React, FastAPI, Claude API, OpenAI API, LangChain, RAG, Make.com, n8n, Pinecone, Prompt Engineering, LLM Fine-tuning, SQL, MongoDB` }
+];
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = '⚠ ' + msg; el.style.display = 'block';
+}
+function clearError() { document.getElementById('error-box').style.display = 'none'; }
+
+function render() {
+  renderStepper();
+  const el = document.getElementById('main-content');
+  if (state.step === 1) el.innerHTML = buildStep1();
+  else if (state.step === 2) el.innerHTML = buildStep2();
+  else if (state.step === 3) el.innerHTML = buildStep3();
+  else if (state.step === 4) el.innerHTML = buildStep4();
+}
+
+function renderStepper() {
+  const steps = [{ n:1, label:'Job Description'},{n:2,label:'Candidates'},{n:3,label:'Analyzing'},{n:4,label:'Results'}];
+  document.getElementById('stepper').innerHTML = steps.map((s,i) => `
+    <div class="step-item">
+      <div class="step-circle ${state.step>s.n?'done':state.step===s.n?'active':'idle'}">${state.step>s.n?'&#10003;':s.n}</div>
+      <span class="step-text ${state.step===s.n?'active':''}">${s.label}</span>
+    </div>${i<3?'<div class="step-line"></div>':''}`).join('');
+}
+
+function buildStep1() {
+  return `<div class="card">
+    <div class="card-title">Enter Job Description</div>
+    <div class="card-sub">Paste the full JD — skills, responsibilities, qualifications.
+      &nbsp;<button class="btn-sample" onclick="loadSampleJD()">&#x2193; Load sample JD</button></div>
+    <label>Job Description</label>
+    <textarea id="jd-ta" placeholder="Paste job description here..." oninput="state.jd=this.value;document.getElementById('jd-next').disabled=!this.value.trim();document.getElementById('jd-chars').textContent=this.value.length+' characters'">${esc(state.jd)}</textarea>
+    <div class="char-count" id="jd-chars">${state.jd.length} characters</div>
+  </div>
+  <div class="nav-row">
+    <div></div>
+    <button class="btn btn-primary" id="jd-next" onclick="goStep2()" ${!state.jd.trim()?'disabled':''}>Next: Add Candidates &#8594;</button>
+  </div>`;
+}
+
+function loadSampleJD() { state.jd = SAMPLE_JD; render(); }
+
+function goStep2() {
+  const ta = document.getElementById('jd-ta');
+  if (ta) state.jd = ta.value;
+  if (!state.jd.trim()) { showError('Please enter a job description first.'); return; }
+  clearError(); state.step = 2; render();
+}
+
+function buildStep2() {
+  const filled = state.candidates.filter(c => c.name.trim() && c.resume.trim()).length;
+  return `<div class="card">
+    <div class="card-title">Add Candidate Resumes</div>
+    <div class="card-sub">Paste full resume text for each candidate (up to 10).
+      &nbsp;<button class="btn-sample" onclick="loadSampleCandidates()">&#x2193; Load 5 sample candidates</button></div>
+    <div id="cand-list">${state.candidates.map((c,i) => buildCandCard(c,i)).join('')}</div>
+    ${state.candidates.length < 10 ? '<button class="add-cand-btn" onclick="addCandidate()">+ Add another candidate</button>' : ''}
+  </div>
+  <div class="nav-row">
+    <button class="btn btn-ghost" onclick="goBack(1)">&#8592; Back</button>
+    <button class="btn btn-primary" onclick="startAnalysis()" ${filled<1?'disabled':''}>Analyze ${filled} Candidate${filled!==1?'s':''} &#8594;</button>
+  </div>`;
+}
+
+function buildCandCard(c, i) {
+  return `<div class="cand-card" id="cand-${c.id}">
+    <div class="cand-header">
+      <span class="cand-num">Candidate ${i+1}</span>
+      ${state.candidates.length>1?`<button class="btn btn-danger" onclick="removeCandidate(${c.id})">&#x2715; Remove</button>`:''}
+    </div>
+    <div class="cand-grid">
+      <div><label>Full Name</label>
+        <input type="text" placeholder="e.g. Priya Sharma" value="${esc(c.name)}" oninput="updateCand(${c.id},'name',this.value)" /></div>
+      <div>
+        <div class="resume-label-row">
+          <label style="margin-bottom:0;">Resume</label>
+          <span style="font-size:11px;color:var(--muted);">PDF upload or paste text</span>
+        </div>
+        <div class="upload-zone ${c.resume && c._fromFile ? 'loaded' : ''}" id="upload-zone-${c.id}"
+          onclick="document.getElementById('file-input-${c.id}').click()"
+          ondragover="event.preventDefault();this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')"
+          ondrop="handleDrop(event,${c.id})">
+          <input type="file" id="file-input-${c.id}" accept=".pdf,.txt" style="display:none" onchange="handleFileUpload(event,${c.id})" />
+          <div class="upload-label ${c.resume && c._fromFile ? 'success' : ''}" id="upload-label-${c.id}">
+            ${c.resume && c._fromFile
+              ? '&#x2713; ' + esc(c._fileName || 'File loaded')
+              : '&#x2B06; Click to upload PDF or drag &amp; drop'}
+          </div>
+        </div>
+        <div class="upload-or">or paste manually</div>
+        <textarea style="min-height:80px;" placeholder="Paste resume text here..." oninput="updateCand(${c.id},'resume',this.value);markManual(${c.id})">${esc(c.resume)}</textarea>
+      </div>
+    </div>
+  </div>`;
+}
+
+function loadSampleCandidates() {
+  state.candidates = SAMPLE_CANDIDATES.map((c,i) => ({ id: i+1, name: c.name, resume: c.resume }));
+  state.nextId = SAMPLE_CANDIDATES.length + 1;
+  render();
+}
+
+function addCandidate() {
+  syncCandidates();
+  state.candidates.push({ id: state.nextId++, name: '', resume: '' });
+  render();
+}
+
+function removeCandidate(id) {
+  syncCandidates();
+  state.candidates = state.candidates.filter(c => c.id !== id);
+  render();
+}
+
+function updateCand(id, field, value) {
+  const c = state.candidates.find(x => x.id === id);
+  if (c) c[field] = value;
+  const filled = state.candidates.filter(c => c.name.trim() && c.resume.trim()).length;
+  const btn = document.querySelector('.nav-row .btn-primary');
+  if (btn) { btn.disabled = filled < 1; btn.textContent = `Analyze ${filled} Candidate${filled!==1?'s':''} \u2192`; }
+}
+
+function syncCandidates() {
+  state.candidates.forEach(c => {
+    const n = document.querySelector(`#cand-${c.id} input[type="text"]`);
+    const r = document.querySelector(`#cand-${c.id} textarea`);
+    if (n) c.name = n.value;
+    if (r) c.resume = r.value;
+  });
+}
+
+function buildStep3() {
+  return `<div class="card"><div class="progress-wrap">
+    <div class="progress-title">Analyzing Resumes</div>
+    <div class="progress-sub">AI is evaluating each candidate against your job description.<br>This takes a few seconds per resume.</div>
+    <div class="progress-list">
+      ${state.progress.map(p => `
+        <div class="p-item" id="prog-${p.id}">
+          <div class="p-dot ${p.status}" id="pdot-${p.id}">
+            ${p.status==='running'?'<div class="spinner"></div>':p.status==='done'?'&#10003;':p.status==='error'?'!':''}
+          </div>
+          <span class="p-name">${esc(p.name)}</span>
+          <span class="p-status" id="pstat-${p.id}">${p.status==='pending'?'Waiting...':p.status==='running'?'Analyzing...':p.status==='done'?'Done ✓':'Error'}</span>
+        </div>`).join('')}
+    </div>
+  </div></div>`;
+}
+
+function updateProgress(id, status) {
+  const dot = document.getElementById('pdot-'+id);
+  const stat = document.getElementById('pstat-'+id);
+  if (dot) {
+    dot.className = 'p-dot ' + status;
+    dot.innerHTML = status==='running'?'<div class="spinner"></div>':status==='done'?'&#10003;':status==='error'?'!':'';
+  }
+  if (stat) stat.textContent = status==='pending'?'Waiting...':status==='running'?'Analyzing...':status==='done'?'Done ✓':'Error';
+}
+
+function buildStep4() {
+  if (!state.results.length) return '<div class="card" style="text-align:center;padding:3rem;color:var(--muted);">No results.</div>';
+  const sorted = [...state.results].sort((a,b) => b.score - a.score);
+  const strong = sorted.filter(r => r.recommendation==='Strong Fit').length;
+  const avg = Math.round(sorted.reduce((s,r) => s+r.score, 0) / sorted.length);
+  const notFit = sorted.filter(r => r.recommendation==='Not Fit').length;
+
+  return `
+    <div class="results-top">
+      <div>
+        <div class="results-title">Screening Results</div>
+        <div class="results-meta">${sorted.length} candidates analyzed &middot; ranked by score</div>
+      </div>
+      <div class="results-btns">
+        <button class="btn btn-ghost" onclick="copyReport(this)">&#x29C6; Copy Report</button>
+        <button class="btn btn-primary" onclick="downloadReport()">&#x2193; Download Report</button>
+        <button class="btn btn-ghost" onclick="goBack(2)">&#8592; Edit Candidates</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-lbl">Total</div><div class="stat-val">${sorted.length}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Strong Fit</div><div class="stat-val c-green">${strong}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Avg Score</div><div class="stat-val c-amber">${avg}</div></div>
+      <div class="stat-box"><div class="stat-lbl">Not a Fit</div><div class="stat-val c-red">${notFit}</div></div>
+    </div>
+
+    <div class="card"><div class="tbl-wrap"><table>
+      <thead><tr><th style="width:46px;">Rank</th><th>Candidate</th><th style="width:200px;">Score</th><th>Recommendation</th></tr></thead>
+      <tbody>
+        ${sorted.map((r,i) => `
+          <tr onclick="toggleDetail(${r.id})">
+            <td><div class="rank-circle ${['r1','r2','r3'][i]||'rn'}">${i+1}</div></td>
+            <td style="font-weight:600;">${esc(r.name)}</td>
+            <td><div class="score-wrap">
+              <div class="score-bar"><div class="score-fill" style="width:${r.score}%;background:${r.score>=70?'var(--accent)':r.score>=45?'var(--amber)':'var(--red)'};"></div></div>
+              <span class="score-num" style="color:${r.score>=70?'var(--accent)':r.score>=45?'var(--amber)':'var(--red)'}">${r.score}</span>
+            </div></td>
+            <td><span class="badge ${r.recommendation==='Strong Fit'?'badge-strong':r.recommendation==='Moderate Fit'?'badge-moderate':'badge-not'}">${esc(r.recommendation)}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div></div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">Detailed Breakdown &mdash; click any card to expand</div>
+      ${sorted.map((r,i) => `
+        <div class="detail-card">
+          <div class="detail-head" onclick="toggleDetail(${r.id})">
+            <div class="detail-head-left">
+              <div class="rank-circle ${['r1','r2','r3'][i]||'rn'}" style="width:24px;height:24px;font-size:11px;">${i+1}</div>
+              <span class="cand-name-big">${esc(r.name)}</span>
+              <span class="badge ${r.recommendation==='Strong Fit'?'badge-strong':r.recommendation==='Moderate Fit'?'badge-moderate':'badge-not'}" style="font-size:11px;">${esc(r.recommendation)}</span>
+            </div>
+            <div class="detail-head-right">
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:${r.score>=70?'var(--accent)':r.score>=45?'var(--amber)':'var(--red)'}">${r.score}/100</span>
+              <span class="chevron" id="chev-${r.id}">&#x25BC;</span>
+            </div>
+          </div>
+          <div class="detail-body" id="detail-${r.id}">
+            <div class="cols2">
+              <div class="col-strengths"><div class="col-label">&#x2713; Key Strengths</div>${(r.strengths||[]).map(s=>`<div class="tag tag-green">${esc(s)}</div>`).join('')}</div>
+              <div class="col-gaps"><div class="col-label">&#x2715; Key Gaps</div>${(r.gaps||[]).map(g=>`<div class="tag tag-red">${esc(g)}</div>`).join('')}</div>
+            </div>
+            <div class="summary-para">${esc(r.summary||'')}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="nav-row" style="margin-top:1.5rem;">
+      <button class="btn btn-ghost" onclick="goBack(1)">&#8592; Edit JD</button>
+      <button class="btn btn-ghost" onclick="goBack(2)">&#8592; Edit Candidates</button>
+    </div>
+
+    <div class="insights-card">
+      <div class="insights-header">
+        <div class="insights-title-row">
+          <div class="insights-icon">&#x2736;</div>
+          <div>
+            <div class="insights-title">AI Hiring Insights &amp; Recommendations</div>
+            <div class="insights-sub">AI analysis of your candidate pool + actionable suggestions</div>
+          </div>
+        </div>
+        ${!state.insights && !state.insightsLoading ? '<button class="btn btn-primary" onclick="generateInsights()">Generate Insights &#8594;</button>' : ''}
+      </div>
+      <div id="insights-body">
+        ${state.insightsLoading ? '<div class="insights-loading"><div class="spinner"></div>Generating insights...</div>' : ''}
+        ${state.insights ? buildInsightsHTML(state.insights) : ''}
+        ${!state.insights && !state.insightsLoading ? '<div style="font-size:13px;color:var(--muted);">Get AI-powered recommendations based on your candidate pool — skill gaps, JD improvements, sourcing advice, and process suggestions.</div>' : ''}
+      </div>
+    </div>`;
+}
+
+function buildInsightsHTML(insights) {
+  return (insights||[]).map((item,i) => `
+    <div class="insight-item">
+      <div class="insight-num">${i+1}</div>
+      <div class="insight-content">
+        <div class="insight-label">${esc(item.category)}</div>
+        <div class="insight-text">${esc(item.insight)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function callGroq(prompt) {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + GROQ_KEY },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.1,
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || 'HTTP ' + res.status);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content || '';
+}
+
+async function startAnalysis() {
+  syncCandidates();
+  const valid = state.candidates.filter(c => c.name.trim() && c.resume.trim());
+  if (!valid.length) { showError('Please add at least one candidate.'); return; }
+  clearError();
+  state.progress = valid.map(c => ({ id: c.id, name: c.name, status: 'pending' }));
+  state.results = [];
+  state.step = 3;
+  render();
+
+  for (let i = 0; i < valid.length; i++) {
+    const c = valid[i];
+    state.progress[i].status = 'running';
+    updateProgress(c.id, 'running');
+    try {
+      const prompt = `You are a senior HR recruiter. Evaluate the resume against the job description.
+Return ONLY a valid JSON object, no markdown, no extra text.
+Format: {"score":<0-100>,"strengths":["s1","s2","s3"],"gaps":["g1","g2","g3"],"recommendation":"Strong Fit|Moderate Fit|Not Fit","summary":"2 sentences"}
+Rules: score>=70 = Strong Fit, 45-69 = Moderate Fit, <45 = Not Fit.
+JD: ${state.jd}
+CANDIDATE: ${c.name}
+RESUME: ${c.resume}
+JSON only:`;
+      const raw = await callGroq(prompt);
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('Invalid JSON response');
+      const result = JSON.parse(match[0]);
+      result.id = c.id; result.name = c.name;
+      state.results.push(result);
+      state.progress[i].status = 'done';
+      updateProgress(c.id, 'done');
+    } catch (err) {
+      console.error(err);
+      state.results.push({ id: c.id, name: c.name, score: 0, strengths: ['Could not evaluate'], gaps: ['Error: ' + err.message], recommendation: 'Not Fit', summary: 'Analysis failed.' });
+      state.progress[i].status = 'error';
+      updateProgress(c.id, 'error');
+    }
+    await sleep(800);
+  }
+  await sleep(800);
+  state.step = 4;
+  render();
+}
+
+async function generateInsights() {
+  state.insightsLoading = true;
+  const body = document.getElementById('insights-body');
+  const btn = document.querySelector('.insights-card .btn-primary');
+  if (body) body.innerHTML = '<div class="insights-loading"><div class="spinner"></div>Generating insights...</div>';
+  if (btn) btn.style.display = 'none';
+
+  const sorted = [...state.results].sort((a,b) => b.score - a.score);
+  const summary = sorted.map(r => `${r.name}: ${r.score}/100, ${r.recommendation}. Strengths: ${(r.strengths||[]).join(', ')}. Gaps: ${(r.gaps||[]).join(', ')}.`).join('\n');
+
+  const prompt = `You are a senior HR consultant. Based on resume screening results, generate 5 strategic hiring insights.
+Return ONLY a JSON array, no markdown: [{"category":"label","insight":"1-2 sentences"},...]
+Cover: 1) Candidate Pool Quality 2) Common Skill Gap 3) JD Improvement 4) Sourcing Recommendation 5) Process Improvement
+JD: ${state.jd.substring(0,400)}
+Results: ${summary}
+JSON array only:`;
+
+  try {
+    const raw = await callGroq(prompt);
+    const match = raw.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('No JSON array');
+    state.insights = JSON.parse(match[0]);
+  } catch (e) {
+    state.insights = [{ category: 'Error', insight: 'Could not generate insights. Please try again.' }];
+  }
+  state.insightsLoading = false;
+  if (body) body.innerHTML = buildInsightsHTML(state.insights);
+}
+
+const expanded = new Set();
+function toggleDetail(id) {
+  const body = document.getElementById('detail-'+id);
+  const chev = document.getElementById('chev-'+id);
+  if (!body) return;
+  if (expanded.has(id)) { expanded.delete(id); body.classList.remove('open'); if (chev) chev.innerHTML = '&#x25BC;'; }
+  else { expanded.add(id); body.classList.add('open'); if (chev) chev.innerHTML = '&#x25B2;'; }
+}
+
+function goBack(step) { clearError(); state.step = step; render(); }
+
+function copyReport(btn) {
+  const sorted = [...state.results].sort((a,b) => b.score - a.score);
+  let out = 'AI RESUME SCREENING REPORT\nGenerated: ' + new Date().toLocaleString() + '\n\n';
+  out += '-'.repeat(68) + '\n';
+  sorted.forEach((r,i) => {
+    out += `${i+1}. ${r.name} — ${r.score}/100 — ${r.recommendation}\n`;
+    out += `   Strengths: ${(r.strengths||[]).join(' | ')}\n`;
+    out += `   Gaps: ${(r.gaps||[]).join(' | ')}\n`;
+    out += `   ${r.summary}\n\n`;
+  });
+  navigator.clipboard.writeText(out).then(() => {
+    const orig = btn.textContent; btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  }).catch(() => {});
+}
+
+function downloadReport() {
+  const sorted = [...state.results].sort((a,b) => b.score - a.score);
+  let out = 'AI RESUME SCREENING REPORT\nGenerated: ' + new Date().toLocaleString() + '\n\n';
+  out += '='.repeat(70) + '\nSUMMARY\n' + '-'.repeat(70) + '\n';
+  out += `Total: ${sorted.length} | Strong Fit: ${sorted.filter(r=>r.recommendation==='Strong Fit').length} | Avg Score: ${Math.round(sorted.reduce((s,r)=>s+r.score,0)/sorted.length)}/100\n\n`;
+  out += '='.repeat(70) + '\nCANDIDATE RANKINGS\n' + '-'.repeat(70) + '\n';
+  sorted.forEach((r,i) => {
+    out += `\n#${i+1} ${r.name}\nScore: ${r.score}/100 | ${r.recommendation}\nStrengths: ${(r.strengths||[]).join(' | ')}\nGaps: ${(r.gaps||[]).join(' | ')}\nSummary: ${r.summary}\n` + '-'.repeat(70) + '\n';
+  });
+  if (state.insights && state.insights.length) {
+    out += '\n' + '='.repeat(70) + '\nAI HIRING INSIGHTS\n' + '-'.repeat(70) + '\n';
+    state.insights.forEach((item,i) => { out += `\n${i+1}. ${item.category}\n   ${item.insight}\n`; });
+  }
+  out += '\nGenerated by AI Resume Screener — Powered by Groq API\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([out], { type: 'text/plain' }));
+  a.download = 'screening-report-' + new Date().toISOString().split('T')[0] + '.txt';
+  a.click();
+}
+
+function markManual(id) {
+  const c = state.candidates.find(x => x.id === id);
+  if (c) { c._fromFile = false; c._fileName = ''; }
+}
+
+function handleDrop(event, id) {
+  event.preventDefault();
+  const zone = document.getElementById('upload-zone-' + id);
+  if (zone) zone.classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (file) processFile(file, id);
+}
+
+function handleFileUpload(event, id) {
+  const file = event.target.files[0];
+  if (file) processFile(file, id);
+}
+
+async function processFile(file, id) {
+  const zone  = document.getElementById('upload-zone-' + id);
+  const label = document.getElementById('upload-label-' + id);
+  if (label) { label.className = 'upload-label'; label.innerHTML = '<div class="spinner"></div> Reading file...'; }
+
+  try {
+    let text = '';
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      text = await extractPDF(file);
+    } else {
+      text = await file.text();
+    }
+
+    const c = state.candidates.find(x => x.id === id);
+    if (c) {
+      c.resume = text;
+      c._fromFile = true;
+      c._fileName = file.name;
+      // auto-fill name from filename if empty
+      if (!c.name.trim()) {
+        const nameGuess = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        c.name = nameGuess;
+      }
+    }
+
+    // update UI without full re-render
+    if (zone)  { zone.classList.add('loaded'); }
+    if (label) { label.className = 'upload-label success'; label.innerHTML = '&#x2713; ' + esc(file.name); }
+
+    // update textarea
+    const ta = document.querySelector('#cand-' + id + ' textarea');
+    const ni = document.querySelector('#cand-' + id + ' input[type="text"]');
+    if (ta) ta.value = text;
+    if (ni && c && c.name) ni.value = c.name;
+
+    // update analyze button
+    const filled = state.candidates.filter(c => c.name.trim() && c.resume.trim()).length;
+    const btn = document.querySelector('.nav-row .btn-primary');
+    if (btn) { btn.disabled = filled < 1; btn.textContent = 'Analyze ' + filled + ' Candidate' + (filled !== 1 ? 's' : '') + ' \u2192'; }
+
+  } catch (err) {
+    if (label) { label.className = 'upload-label'; label.innerHTML = '&#x26A0; Failed to read file — try pasting manually'; }
+    console.error('File read error:', err);
+  }
+}
+
+async function extractPDF(file) {
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  if (!pdfjsLib) throw new Error('PDF.js not loaded');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    fullText += pageText + '\n';
+  }
+  return fullText.trim();
+}
+
+window.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

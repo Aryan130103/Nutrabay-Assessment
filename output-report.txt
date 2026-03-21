@@ -1,0 +1,74 @@
+AI RESUME SCREENING REPORT
+Generated: 3/21/2026, 8:01:30 AM
+
+======================================================================
+SUMMARY
+----------------------------------------------------------------------
+Total: 6 | Strong Fit: 4 | Avg Score: 71/100
+
+======================================================================
+CANDIDATE RANKINGS
+----------------------------------------------------------------------
+
+#1 Kabir Anand
+Score: 90/100 | Strong Fit
+Strengths: Proficiency in Python and JavaScript | Experience with LLMs/AI APIs | Familiarity with automation tools
+Gaps: No direct experience with no-code tools like Airtable or Notion
+Summary: Kabir Anand's resume demonstrates a strong fit for the AI Automation Intern role at Nutrabay, with relevant experience in AI development and automation tools. His skills in Python, JavaScript, and AI APIs, along with his experience in building AI-powered tools, make him a suitable candidate for the position.
+----------------------------------------------------------------------
+
+#2 Arjun Sharma
+Score: 85/100 | Strong Fit
+Strengths: Proficiency in Python and JavaScript | Experience with LLMs/AI APIs (Claude, OpenAI) | Familiarity with automation tools (Zapier, n8n, Make)
+Gaps: Limited experience with UI building | No direct experience with Webflow
+Summary: Arjun Sharma is a strong fit for the AI Automation Intern role at Nutrabay, with a solid background in AI/ML and automation, as well as relevant skills and projects that align with the job description. His experience with LLMs/AI APIs, automation tools, and no-code tools makes him a promising candidate for building AI-powered tools and automating workflows.
+----------------------------------------------------------------------
+
+#3 Rahul Mehta
+Score: 80/100 | Strong Fit
+Strengths: Proficiency in Node.js and Python | Experience with API integrations and automation | Familiarity with no-code tools like Notion
+Gaps: Limited experience with LLMs/AI APIs | No prior internship or project in AI/automation in health and nutrition domain
+Summary: Rahul Mehta's resume demonstrates a strong foundation in programming languages and API integrations, making him a suitable fit for the AI Automation Intern role at Nutrabay. With some training and guidance on LLMs/AI APIs, Rahul can leverage his existing skills to build AI-powered tools and automate workflows for the company.
+----------------------------------------------------------------------
+
+#4 Aryan
+Score: 80/100 | Strong Fit
+Strengths: Proficiency in Python and JavaScript | Experience with AI/ML and Deep Learning | Strong problem-solving skills
+Gaps: Limited experience with LLMs/AI APIs | No direct experience with automation tools like Zapier, Make, or n8n | No prior internship or project in AI/automation with a health and nutrition brand
+Summary: Aryan has a strong foundation in programming languages and AI/ML, with experience in building UIs and working on data-driven projects, making him a strong fit for the AI Automation Intern role at Nutrabay. However, he may need some training on specific AI APIs and automation tools used by the company.
+----------------------------------------------------------------------
+
+#5 Priya Nair
+Score: 60/100 | Moderate Fit
+Strengths: Familiarity with no-code tools like Notion and Zapier | Basic knowledge of AI APIs through ChatGPT | Prior experience in managing content calendar and automation projects
+Gaps: Lack of proficiency in Python or JavaScript | Limited experience with LLMs/AI APIs beyond ChatGPT | No direct experience in building UIs or dashboards
+Summary: Priya Nair has some relevant experience with no-code tools and basic AI APIs, but lacks proficiency in programming languages and extensive experience with LLMs/AI APIs, making her a moderate fit for the AI Automation Intern role at Nutrabay. With some training and development, Priya could potentially grow into the role and contribute to building AI-powered tools and automating workflows.
+----------------------------------------------------------------------
+
+#6 Sneha Kulkarni
+Score: 30/100 | Not Fit
+Strengths: Familiarity with Zapier basic automations | Experience with process mapping and documentation | Strong operational background
+Gaps: Lack of proficiency in Python or JavaScript | No experience with LLMs/AI APIs | No knowledge of UI building or dashboard creation
+Summary: Sneha Kulkarni's resume lacks the required technical skills for the AI Automation Intern role, but she has a strong operational background and is keen to learn AI tools. However, her lack of coding experience and AI knowledge makes her a less suitable fit for this position.
+----------------------------------------------------------------------
+
+======================================================================
+AI HIRING INSIGHTS
+----------------------------------------------------------------------
+
+1. Candidate Pool Quality
+   The candidate pool has a strong overall fit, with 4 out of 6 candidates scoring 80/100 or higher, indicating a high level of proficiency in required skills such as Python, JavaScript, and experience with LLMs/AI APIs.
+
+2. Common Skill Gap
+   A common skill gap among candidates is the lack of direct experience with no-code tools like Airtable or Notion, as well as limited experience with building UIs or dashboards, which could be addressed through training or upskilling programs.
+
+3. JD Improvement
+   The job description could be improved by adding more specific requirements for the health and nutrition domain, as well as clarifying the level of proficiency required for no-code tools and UI building, to better attract candidates with relevant experience.
+
+4. Sourcing Recommendation
+   To attract more candidates with relevant experience in the health and nutrition domain, sourcing efforts could be focused on online platforms and communities related to AI, automation, and health technology, such as GitHub, Kaggle, or Reddit forums.
+
+5. Process Improvement
+   The hiring process could be improved by adding a practical assessment or project-based evaluation to test candidates' skills in building UIs or dashboards, as well as their experience with LLMs/AI APIs and automation tools, to better evaluate their fit for the role.
+
+Generated by AI Resume Screener — Powered by Groq API
