@@ -8,7 +8,7 @@
 
 ---
 
-## If Error occurs due to API
+## If Error occurs due to API Key
 
 1. Generate Groq API Key here: https://console.groq.com/keys
 2. Paste the API key in code line 208: 
