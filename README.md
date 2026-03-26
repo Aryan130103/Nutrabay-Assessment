@@ -2,10 +2,7 @@
 
 ## Quick Start
 
-1. Please generate the groq api key at: https://console.groq.com/keys
-2. Paste the key in code line 208:
-    const GROQ_KEY = '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';
-3. Save the changes and  Download `ai-resume-screener.html`
+1. Download `ai-resume-screener.html`
 4. Open it in any browser (Chrome, Firefox, Edge)
 5. Done - no install, no server, no setup required
 
