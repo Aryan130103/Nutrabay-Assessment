@@ -3,17 +3,10 @@
 ## Quick Start
 
 1. Download `ai-resume-screener.html`
-2. Open it in any browser (Chrome, Firefox, Edge)
-3. Done - no install, no server, no setup required
-
----
-
-## If Error occurs due to API Key
-
-1. Generate Groq API Key here: https://console.groq.com/keys
-2. Paste the API key in code line 208:
+2. Generate Groq API Key here: https://console.groq.com/keys
+3. Paste the API key in code line 208:
    const GROQ_KEY = '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';
-3. Repeat the Quick Start steps.
+4. Open it in any browser (Chrome, Firefox, Edge)
 
 ---
 
